@@ -7,9 +7,12 @@ ARG NODE_VERSION=lts
 FROM node:${NODE_VERSION}-alpine as build
 
 # Install dependencies
+RUN apk add --no-cache python3 make g++
+
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm install --frozen-lockfile
+
+RUN npm ci
 
 # Copy codebase
 COPY . .
@@ -19,6 +22,8 @@ COPY . .
 #
 
 FROM node:${NODE_VERSION}-alpine as base
+
+RUN apk add --no-cache libstdc++
 
 USER nobody
 
