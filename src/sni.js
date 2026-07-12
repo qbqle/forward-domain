@@ -12,6 +12,7 @@ import {
     isExceedHostLimit,
     isExceedLabelLimit,
     validateCAARecords,
+    findTxtRecord,
     derToPem
 } from "./util.js";
 
@@ -71,8 +72,22 @@ async function buildCache(host) {
             return null;
         }
 
+        // Check if domain has redirect DNS record
+        const txtRecord = await findTxtRecord(host);
+        if (!txtRecord) {
+            return null;
+        }
+
         // can only process one certificate generation at a time
         return await lock.acquire('cert', async () => {
+            // race condition check
+            try {
+                let data = db.resolveCertAsCache(host);
+                if (Date.now() < data.expire) {
+                    return data;
+                }
+            } catch { };
+
             const { cert, key } = await client.generateCertificate(host);
             const { expire } = db.saveCertFromCache(host, key, cert);
             return {

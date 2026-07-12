@@ -1,15 +1,19 @@
-ARG NODE_VERSION=lts
+ARG NODE_VERSION=22
 
 #
 # --- Build Stage ---
 #
 
-FROM node:${NODE_VERSION}-alpine as build
+FROM node:${NODE_VERSION}-alpine AS build
 
 # Install dependencies
+# hadolint ignore=DL3018
+RUN apk add --no-cache python3 make g++
+
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm install --frozen-lockfile
+
+RUN npm ci
 
 # Copy codebase
 COPY . .
@@ -18,7 +22,10 @@ COPY . .
 # --- Base Stage ---
 #
 
-FROM node:${NODE_VERSION}-alpine as base
+FROM node:${NODE_VERSION}-alpine AS base
+
+# hadolint ignore=DL3018
+RUN apk add --no-cache libstdc++
 
 USER nobody
 
@@ -35,7 +42,7 @@ VOLUME /app/.certs
 # --- App Stage ---
 #
 
-FROM base as app
+FROM base AS app
 
 ENV NODE_ENV=production
 COPY --from=build --chown=nobody /app/app.js .
