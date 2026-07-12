@@ -33,7 +33,7 @@ How does it works?
 To forward from `www.old.com` to `old.com`, add these records to your DNS:
 
 ```
-www.old.com     IN    CNAME   r.forwarddomain.net
+www.old.com     IN    CNAME   r.dnsredirect.eu
 _.www.old.com   IN    TXT     forward-domain=https://old.com/*
 ```
 
@@ -41,18 +41,18 @@ Because CNAME can't be used in apex domains, you can use A/AAAA records.<br>
 To forward from `old.com` to `new.net`, add these records to your DNS:
 
 ```
-old.com     IN    A       167.172.5.31
+old.com     IN    AAAA    2a01:4f8:1c18:eed4::
 _.old.com   IN    TXT     forward-domain=https://new.net/*
 ```
 
 The star `*` at the end tells us that the remaining URL path is also need to be forwarded to the destination URL.
 
-> If you use Cloudflare or any DNS which supports [CNAME Flattening](https://blog.cloudflare.com/introducing-cname-flattening-rfc-compliant-cnames-at-a-domains-root/), you still can use CNAME records pointing to `r.forwarddomain.net`. It's recommended to use CNAME records rather than A/AAAA records.
+> If you use Cloudflare or any DNS which supports [CNAME Flattening](https://blog.cloudflare.com/introducing-cname-flattening-rfc-compliant-cnames-at-a-domains-root/), you still can use CNAME records pointing to `r.dnsredirect.eu`. It's recommended to use CNAME records rather than A/AAAA records.
 
 You can choose the type of redirection you want to use by declaring the `http-status` value:
 
 ```
-www.old.com     IN    CNAME   r.forwarddomain.net
+www.old.com     IN    CNAME   r.dnsredirect.eu
 _.www.old.com   IN    TXT     http-status=302;forward-domain=https://old.com/*
 ```
 
@@ -82,7 +82,7 @@ It only slow at first time because it has to sign HTTPS certificates.
 
 ### How about IPv6?
 
-IPv6 record is added in `r.forwarddomain.net` so subdomain redirects will simply work with IPv6. We don't guarantee that its IPv6 address will be persistent though. See [#2](https://github.com/willnode/forward-domain/issues/2#issuecomment-1003831835) for apex domains setup.
+IPv6 record is added in `r.dnsredirect.eu` so subdomain redirects will simply work with IPv6. We don't guarantee that its IPv6 address will be persistent though. See [#2](https://github.com/willnode/forward-domain/issues/2#issuecomment-1003831835) for apex domains setup.
 
 ### What records do we keep?
 

@@ -39,7 +39,7 @@ If `BLACKLIST_REDIRECT` empty or unset, it will not attempt to generate certific
 
 + `app.js` This is the startup file for production, listening on both `HTTP_PORT` and `HTTPS_PORT`.
 + `index.js` This is for development or testing only, listening to only `HTTP_PORT` on main or exporting the module.
-+ `stat.js` A simple background service [for providing stat](https://s.forwarddomain.net) listening to `STAT_PORT`. 
++ The `/stat`, `/health`, and `/flushcache` endpoints are served on the host set in `HOME_DOMAIN` (no separate process is required).
 
 ### SSL Certificates
 
@@ -77,20 +77,19 @@ events {
 }
 stream {
     upstream main {
-        server 167.172.5.31:6443;
+        server [2a01:4f8:1c18:eed4::]:6443;
     }
     upstream forwarder {
-        server 167.172.5.31:5443;
+        server [2a01:4f8:1c18:eed4::]:5443;
     }
 
     map $ssl_preread_server_name $upstream {
-        forwarddomain.net main;
+        dnsredirect.eu main;
         default forwarder;
     }
 
     server {
-        listen 167.172.5.31:443;
-        listen [2400:6180:0:d0::e08:a001]:443;
+        listen [2a01:4f8:1c18:eed4::]:443;
         resolver 1.1.1.1;
         proxy_pass $upstream;
         ssl_preread on;
@@ -99,8 +98,7 @@ stream {
 http {       
     server {
         server_name _ default_server;
-        listen 167.172.5.31;
-        listen [2400:6180:0:d0::e08:a001];
+        listen [2a01:4f8:1c18:eed4::];
         location / {
             proxy_pass http://127.0.0.1:5080;
             proxy_set_header Host $host;
@@ -108,15 +106,13 @@ http {
     }
         
     server {
-        server_name forwarddomain.net;
-        listen 167.172.5.31;
-        listen [2400:6180:0:d0::e08:a001];
+        server_name dnsredirect.eu;
+        listen [2a01:4f8:1c18:eed4::];
         location / {
             proxy_pass http://127.0.0.1:5900;
             proxy_set_header Host $host;
         }
-        listen 167.172.5.31:6443 ssl;
-        listen [2400:6180:0:d0::e08:a001]:6443 ssl;
+        listen [2a01:4f8:1c18:eed4::]:6443 ssl;
         ssl_certificate /home/web/ssl.combined;
         ssl_certificate_key /home/web/ssl.key;
     }
